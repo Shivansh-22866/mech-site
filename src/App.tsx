@@ -1,16 +1,13 @@
 import './App.css'
-import { Button } from './components/ui/button'
+import About from './components/About'
+import Hero from './components/Hero'
 
 function App() {
 
   return (
     <>
-      <div className='text-7xl'>
-        PPTX
-      </div>
-      <Button>
-        CLICK
-      </Button>
+    <Hero/>
+    <About/>
     </>
   )
 }
