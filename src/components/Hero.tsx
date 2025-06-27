@@ -1,6 +1,7 @@
 "use client"
 
-import { motion } from "framer-motion"
+import { motion, useMotionValue, useAnimation } from "framer-motion"
+import { useRef } from "react"
 import { Eye, Brain, Users, Building, MessageCircle } from "lucide-react"
 
 const gearSections = [
@@ -12,6 +13,15 @@ const gearSections = [
 ]
 
 export default function Hero() {
+  const rotation = useMotionValue(0)
+  const controls = useAnimation()
+  const dragSensitivity = 0.5
+
+  // When drag ends, animate rotation back to 0 smoothly over 3 seconds
+  function handleDragEnd() {
+    controls.start({ rotate: 0, transition: { duration: 3, ease: "easeOut" } })
+  }
+
   return (
     <section className="relative min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
       {/* Background Pattern */}
@@ -37,44 +47,53 @@ export default function Hero() {
           </motion.p>
         </div>
 
-        {/* Metal Gear with 5 Sections */}
+        {/* Gear + Sections */}
         <div className="flex justify-center items-center">
           <motion.div
-            initial={{ opacity: 0, scale: 0.8, rotate: -180 }}
-            animate={{ opacity: 1, scale: 1, rotate: 0 }}
-            transition={{ duration: 1.2, delay: 0.4 }}
-            className="relative w-96 h-96 md:w-[500px] md:h-[500px]"
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.2}
+            onDrag={(e, info) => {
+              rotation.set(rotation.get() + info.delta.x * dragSensitivity)
+            }}
+            onDragEnd={handleDragEnd}
+            className="relative w-96 h-96 md:w-[500px] md:h-[500px] cursor-grab active:cursor-grabbing"
           >
-            {/* Central Gear */}
-            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-slate-600 to-slate-800 shadow-2xl border-4 border-slate-500">
-              <div className="absolute inset-4 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 shadow-inner">
-                <div className="absolute inset-8 rounded-full bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
-                  <div className="w-16 h-16 rounded-full bg-slate-600 shadow-lg"></div>
+            {/* Rotating Gear Teeth + Center */}
+            <motion.div
+              style={{ rotate: rotation }}
+              animate={controls}
+              className="absolute inset-0"
+            >
+              {/* Central Gear */}
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-slate-600 to-slate-800 shadow-2xl border-4 border-slate-500">
+                <div className="absolute inset-4 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 shadow-inner">
+                  <div className="absolute inset-8 rounded-full bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-full bg-slate-600 shadow-lg"></div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Gear Teeth */}
-            {Array.from({ length: 20 }).map((_, i) => (
-              <div
-                key={i}
-                className="absolute w-6 h-12 bg-slate-600 origin-bottom"
-                style={{
-                  left: "50%",
-                  bottom: "50%",
-                  transform: `translateX(-50%) rotate(${i * 18}deg) translateY(-200px)`,
-                }}
-              />
-            ))}
+              {/* Gear Teeth */}
+              {Array.from({ length: 20 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute w-6 h-12 bg-slate-600 origin-bottom"
+                  style={{
+                    left: "50%",
+                    bottom: "50%",
+                    transform: `translateX(-50%) rotate(${i * 18}deg) translateY(-200px)`,
+                  }}
+                />
+              ))}
+            </motion.div>
 
-            {/* 5 Sections around the gear */}
+            {/* Fixed 5 Sections (NOT rotated) */}
             {gearSections.map((section, index) => {
-              const angle = index * 72 - 90 // Start from top and distribute evenly
+              const angle = index * 72 - 90 // distribute evenly starting top
               const radius = 280
               const x = Math.cos((angle * Math.PI) / 180) * radius
               const y = Math.sin((angle * Math.PI) / 180) * radius
-
-              console.log(angle, radius, x, y)
 
               return (
                 <motion.div
@@ -86,15 +105,13 @@ export default function Hero() {
                   style={{
                     left: "50%",
                     top: "50%",
-                    translateX: `calc(-50% + ${0.4*x}px)`,
-                    translateY: `calc(-50% + ${0.4*y}px)`,
+                    translateX: `calc(-50% + ${0.45 * x}px)`,
+                    translateY: `calc(-50% + ${0.45 * y}px)`,
                   }}
                 >
                   <section.icon className="w-8 h-8 md:w-10 md:h-10 mb-2 group-hover:scale-110 transition-transform" />
                   <span className="text-xs font-bold text-center">{section.title}</span>
-                  <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-xs text-center w-48 !z-[99]">
-                    {section.description}
-                  </div>
+
                 </motion.div>
               )
             })}
