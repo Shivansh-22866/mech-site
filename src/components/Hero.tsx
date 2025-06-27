@@ -1,7 +1,6 @@
 "use client"
 
 import { motion, useMotionValue, useAnimation } from "framer-motion"
-import { useRef } from "react"
 import { Eye, Brain, Users, Building, MessageCircle } from "lucide-react"
 
 const gearSections = [
@@ -53,7 +52,7 @@ export default function Hero() {
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.2}
-            onDrag={(e, info) => {
+            onDrag={(_e, info) => {
               rotation.set(rotation.get() + info.delta.x * dragSensitivity)
             }}
             onDragEnd={handleDragEnd}
